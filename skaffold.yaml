@@ -1,0 +1,22 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: leetcode-clone
+build:
+  artifacts:
+  - image: leetcode-clone
+    docker:
+      dockerfile: Dockerfile
+      target: development
+  local:
+    push: false
+deploy:
+  kubectl:
+    manifests:
+    - k8s/*.yaml
+portForward:
+- resourceType: service
+  resourceName: web
+  namespace: leetcode-clone
+  port: 8000
+  localPort: 8000

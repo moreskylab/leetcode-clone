@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - LeetCode Clone{% endblock %}
+
+{% block content %}
+<div class="min-h-screen">
+    <!-- Hero Section -->
+    <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+            <div class="text-center">
+                <h1 class="text-5xl font-extrabold mb-4">
+                    Master Coding Challenges
+                </h1>
+                <p class="text-xl mb-8">
+                    Practice, compete, and improve your programming skills
+                </p>
+                <div class="space-x-4">
+                    <a href="/problems/" class="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition inline-block">
+                        Start Practicing
+                    </a>
+                    <a href="/leaderboard/" class="bg-transparent border-2 border-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition inline-block">
+                        View Leaderboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <h2 class="text-3xl font-bold text-center mb-12">Why CodeJudge?</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="text-center">
+                <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-code text-blue-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Rich Code Editor</h3>
+                <p class="text-gray-600">
+                    Monaco Editor with syntax highlighting and auto-completion
+                </p>
+            </div>
+            
+            <div class="text-center">
+                <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Instant Feedback</h3>
+                <p class="text-gray-600">
+                    Run and test your code against multiple test cases instantly
+                </p>
+            </div>
+            
+            <div class="text-center">
+                <div class="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-trophy text-purple-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Compete & Learn</h3>
+                <p class="text-gray-600">
+                    Track your progress and compete on the leaderboard
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Section -->
+    <div class="bg-gray-100 py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-center" id="stats">
+                <div>
+                    <div class="text-4xl font-bold text-blue-600" id="totalProblems">0</div>
+                    <div class="text-gray-600 mt-2">Problems</div>
+                </div>
+                <div>
+                    <div class="text-4xl font-bold text-green-600" id="totalUsers">0</div>
+                    <div class="text-gray-600 mt-2">Users</div>
+                </div>
+                <div>
+                    <div class="text-4xl font-bold text-purple-600" id="totalSubmissions">0</div>
+                    <div class="text-gray-600 mt-2">Submissions</div>
+                </div>
+                <div>
+                    <div class="text-4xl font-bold text-orange-600" id="avgAcceptance">0%</div>
+                    <div class="text-gray-600 mt-2">Avg Acceptance</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Load statistics
+    async function loadStatistics() {
+        try {
+            // Load problem count
+            const problemsRes = await fetch(`${API_BASE_URL}/api/problems/`);
+            const problemsData = await problemsRes.json();
+            document.getElementById('totalProblems').textContent = problemsData.count || 0;
+            
+            // Load leaderboard to get user count
+            const leaderboardRes = await fetch(`${API_BASE_URL}/api/auth/leaderboard/`);
+            const leaderboardData = await leaderboardRes.json();
+            document.getElementById('totalUsers').textContent = leaderboardData.length || 0;
+            
+        } catch (error) {
+            console.error('Failed to load statistics:', error);
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', loadStatistics);
+</script>
+{% endblock %}

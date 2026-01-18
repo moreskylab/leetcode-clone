@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: judge0
+  namespace: leetcode-clone
+  labels:
+    app: judge0
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: judge0
+  template:
+    metadata:
+      labels:
+        app: judge0
+    spec:
+      containers:
+      - name: judge0
+        image: judge0/judge0:latest
+        ports:
+        - containerPort: 2358
+        env:
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: judge0-config
+              key: REDIS_HOST
+        - name: REDIS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: judge0-config
+              key: REDIS_PORT
+        - name: POSTGRES_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: judge0-config
+              key: POSTGRES_HOST
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: judge0-config
+              key: POSTGRES_DB
+        - name: POSTGRES_USER
+          valueFrom:
+            configMapKeyRef:
+              name: judge0-config
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: judge0-secrets
+              key: POSTGRES_PASSWORD
+        securityContext:
+          privileged: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: judge0
+  namespace: leetcode-clone
+spec:
+  selector:
+    app: judge0
+  ports:
+  - port: 2358
+    targetPort: 2358
+  type: ClusterIP

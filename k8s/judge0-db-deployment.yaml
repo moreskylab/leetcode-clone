@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: judge0-db
+  namespace: leetcode-clone
+  labels:
+    app: judge0-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: judge0-db
+  template:
+    metadata:
+      labels:
+        app: judge0-db
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:16-alpine
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: judge0-config
+              key: POSTGRES_DB
+        - name: POSTGRES_USER
+          valueFrom:
+            configMapKeyRef:
+              name: judge0-config
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: judge0-secrets
+              key: POSTGRES_PASSWORD
+        volumeMounts:
+        - name: judge0-db-storage
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: judge0-db-storage
+        persistentVolumeClaim:
+          claimName: judge0-db-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: judge0-db
+  namespace: leetcode-clone
+spec:
+  selector:
+    app: judge0-db
+  ports:
+  - port: 5432
+    targetPort: 5432
+  type: ClusterIP

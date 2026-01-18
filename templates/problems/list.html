@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}Problems - LeetCode Clone{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Problem List</h1>
+        <p class="mt-2 text-gray-600">Choose a problem to start practicing</p>
+    </div>
+
+    <!-- Filters -->
+    <div class="mb-6 flex flex-wrap gap-4">
+        <select id="difficultyFilter" class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">All Difficulties</option>
+            <option value="Easy">Easy</option>
+            <option value="Medium">Medium</option>
+            <option value="Hard">Hard</option>
+        </select>
+        
+        <input type="text" id="searchBox" placeholder="Search problems..." 
+               class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow max-w-md">
+    </div>
+
+    <!-- Problems Table -->
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                        Status
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Title
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Difficulty
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Category
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Acceptance
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="problemsTableBody" class="bg-white divide-y divide-gray-200">
+                <!-- Problems will be loaded here -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="text-center py-12">
+        <i class="fas fa-spinner fa-spin text-4xl text-blue-600"></i>
+        <p class="mt-4 text-gray-600">Loading problems...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden text-center py-12">
+        <i class="fas fa-inbox text-4xl text-gray-400"></i>
+        <p class="mt-4 text-gray-600">No problems found</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let allProblems = [];
+    
+    async function loadProblems() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/problems/`);
+            const data = await response.json();
+            allProblems = data.results || data;
+            renderProblems(allProblems);
+            document.getElementById('loadingState').classList.add('hidden');
+        } catch (error) {
+            console.error('Failed to load problems:', error);
+            document.getElementById('loadingState').innerHTML = `
+                <i class="fas fa-exclamation-circle text-4xl text-red-600"></i>
+                <p class="mt-4 text-red-600">Failed to load problems</p>
+            `;
+        }
+    }
+    
+    function renderProblems(problems) {
+        const tbody = document.getElementById('problemsTableBody');
+        
+        if (problems.length === 0) {
+            tbody.innerHTML = '';
+            document.getElementById('emptyState').classList.remove('hidden');
+            return;
+        }
+        
+        document.getElementById('emptyState').classList.add('hidden');
+        
+        tbody.innerHTML = problems.map(problem => {
+            const difficultyColors = {
+                'Easy': 'text-green-600 bg-green-100',
+                'Medium': 'text-yellow-600 bg-yellow-100',
+                'Hard': 'text-red-600 bg-red-100'
+            };
+            
+            const statusIcon = problem.is_solved 
+                ? '<i class="fas fa-check-circle text-green-600"></i>'
+                : '';
+            
+            return `
+                <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location.href='/problems/${problem.id}/'">
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        ${statusIcon}
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-medium text-gray-900">${problem.id}. ${problem.title}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${difficultyColors[problem.difficulty]}">
+                            ${problem.difficulty}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${problem.category}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${problem.acceptance_rate.toFixed(1)}%
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+    
+    function filterProblems() {
+        const difficulty = document.getElementById('difficultyFilter').value;
+        const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+        
+        let filtered = allProblems;
+        
+        if (difficulty) {
+            filtered = filtered.filter(p => p.difficulty === difficulty);
+        }
+        
+        if (searchTerm) {
+            filtered = filtered.filter(p => 
+                p.title.toLowerCase().includes(searchTerm) ||
+                p.category.toLowerCase().includes(searchTerm)
+            );
+        }
+        
+        renderProblems(filtered);
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        loadProblems();
+        
+        document.getElementById('difficultyFilter').addEventListener('change', filterProblems);
+        document.getElementById('searchBox').addEventListener('input', filterProblems);
+    });
+</script>
+{% endblock %}

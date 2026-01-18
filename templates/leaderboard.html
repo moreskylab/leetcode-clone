@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block title %}Leaderboard - LeetCode Clone{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Leaderboard</h1>
+        <p class="mt-2 text-gray-600">Top performers on the platform</p>
+    </div>
+
+    <!-- Leaderboard Table -->
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                        Rank
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        User
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Problems Solved
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Points
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="leaderboardBody" class="bg-white divide-y divide-gray-200">
+                <!-- Leaderboard will be loaded here -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="text-center py-12">
+        <i class="fas fa-spinner fa-spin text-4xl text-blue-600"></i>
+        <p class="mt-4 text-gray-600">Loading leaderboard...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden text-center py-12">
+        <i class="fas fa-trophy text-4xl text-gray-400"></i>
+        <p class="mt-4 text-gray-600">No users on the leaderboard yet</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function loadLeaderboard() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/auth/leaderboard/`);
+            const users = await response.json();
+            
+            renderLeaderboard(users);
+            document.getElementById('loadingState').classList.add('hidden');
+        } catch (error) {
+            console.error('Failed to load leaderboard:', error);
+            document.getElementById('loadingState').innerHTML = `
+                <i class="fas fa-exclamation-circle text-4xl text-red-600"></i>
+                <p class="mt-4 text-red-600">Failed to load leaderboard</p>
+            `;
+        }
+    }
+    
+    function renderLeaderboard(users) {
+        const tbody = document.getElementById('leaderboardBody');
+        
+        if (users.length === 0) {
+            tbody.innerHTML = '';
+            document.getElementById('emptyState').classList.remove('hidden');
+            return;
+        }
+        
+        document.getElementById('emptyState').classList.add('hidden');
+        
+        tbody.innerHTML = users.map((user, index) => {
+            let rankDisplay = user.rank || (index + 1);
+            let rankIcon = '';
+            
+            if (rankDisplay === 1) {
+                rankIcon = '<i class="fas fa-trophy text-yellow-500 text-xl"></i>';
+            } else if (rankDisplay === 2) {
+                rankIcon = '<i class="fas fa-medal text-gray-400 text-xl"></i>';
+            } else if (rankDisplay === 3) {
+                rankIcon = '<i class="fas fa-medal text-orange-600 text-xl"></i>';
+            } else {
+                rankIcon = `<span class="font-semibold text-gray-600">${rankDisplay}</span>`;
+            }
+            
+            return `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        ${rankIcon}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-10 w-10">
+                                ${user.avatar 
+                                    ? `<img class="h-10 w-10 rounded-full" src="${user.avatar}" alt="${user.username}">` 
+                                    : `<div class="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
+                                        ${user.username.charAt(0).toUpperCase()}
+                                       </div>`
+                                }
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">${user.username}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">${user.solved_count}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-semibold text-blue-600">${user.points}</div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+    
+    document.addEventListener('DOMContentLoaded', loadLeaderboard);
+</script>
+{% endblock %}

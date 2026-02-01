@@ -13,8 +13,8 @@
         <form class="mt-8 space-y-6" id="loginForm">
             <div class="rounded-md shadow-sm -space-y-px">
                 <div>
-                    <label for="username" class="sr-only">Username</label>
-                    <input id="username" name="username" type="text" required 
+                    <label for="username1" class="sr-only">Username</label>
+                    <input id="username1" name="username1" type="text" required 
                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" 
                            placeholder="Username">
                 </div>
@@ -50,42 +50,89 @@
 
 {% block extra_js %}
 <script>
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
+    // document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    //     e.preventDefault();
         
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-        const errorDiv = document.getElementById('errorMessage');
+    //     const username = document.getElementById('username').value;
+    //     const password = document.getElementById('password').value;
+    //     const errorDiv = document.getElementById('errorMessage');
         
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/auth/login/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ username, password }),
-            });
+    //     try {
+    //         const response = await fetch(`${API_BASE_URL}/api/auth/login/`, {
+    //             method: 'POST',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //             },
+    //             body: JSON.stringify({ username, password }),
+    //         });
+    //         console.log("Username value:", username); // Should not be 'undefined'
+    //         console.log("Object to send:", { username, password });
             
-            if (response.ok) {
-                const data = await response.json();
-                setTokens(data.access, data.refresh);
+    //         if (response.ok) {
+    //             const data = await response.json();
+    //             setTokens(data.access, data.refresh);
                 
-                // Fetch and store user data
-                const userResponse = await fetchWithAuth(`${API_BASE_URL}/api/auth/profile/`);
-                const userData = await userResponse.json();
-                localStorage.setItem('user_data', JSON.stringify(userData));
+    //             // Fetch and store user data
+    //             const userResponse = await fetchWithAuth(`${API_BASE_URL}/api/auth/profile/`);
+    //             const userData = await userResponse.json();
+    //             localStorage.setItem('user_data', JSON.stringify(userData));
                 
-                // Redirect to problems page
-                window.location.href = '/problems/';
-            } else {
-                const error = await response.json();
-                errorDiv.textContent = error.detail || 'Invalid credentials';
+    //             // Redirect to problems page
+    //             window.location.href = '/problems/';
+    //         } else {
+    //             const error = await response.json();
+    //             errorDiv.textContent = error.detail || 'Invalid credentials';
+    //             errorDiv.classList.remove('hidden');
+    //         }
+    //     } catch (error) {
+    //         errorDiv.textContent = 'An error occurred. Please try again.';
+    //         errorDiv.classList.remove('hidden');
+    //     }
+    // });
+    document.addEventListener('DOMContentLoaded', () => { //
+    const loginForm = document.getElementById('loginForm');
+    
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username1').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('errorMessage');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/login/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password }),
+                });
+                console.log("Username value:", username); // Should not be 'undefined'
+                console.log("Object to send:", { username, password });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    setTokens(data.access, data.refresh);
+                    
+                    // Fetch and store user data
+                    const userResponse = await fetchWithAuth(`${API_BASE_URL}/api/auth/profile/`);
+                    const userData = await userResponse.json();
+                    localStorage.setItem('user_data', JSON.stringify(userData));
+                    
+                    // Redirect to problems page
+                    window.location.href = '/problems/';
+                } else {
+                    const error = await response.json();
+                    errorDiv.textContent = error.detail || 'Invalid credentials';
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                errorDiv.textContent = 'An error occurred. Please try again.';
                 errorDiv.classList.remove('hidden');
             }
-        } catch (error) {
-            errorDiv.textContent = 'An error occurred. Please try again.';
-            errorDiv.classList.remove('hidden');
-        }
-    });
+        });
+    }
+});
 </script>
 {% endblock %}

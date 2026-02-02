@@ -49,6 +49,13 @@ services:
       timeout: 3s
       retries: 5
 
+  migrate:
+    build: .
+    command: python manage.py migrate --noinput
+    depends_on:
+      - db
+    env_file: .env
+
   # Django Web Application
   web:
     build:
@@ -67,6 +74,8 @@ services:
       - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
       - DEBUG=False
     depends_on:
+      migrate:
+        condition: service_completed_successfully
       db:
         condition: service_healthy
       redis:

@@ -111,7 +111,7 @@ services:
   # Judge0 Workers
   judge0_worker:
     image: judge0/judge0:latest
-    container_name: leetcode_judge0_worker
+    # container_name: leetcode_judge0_worker
     privileged: true
     command: ["./scripts/workers"]
     environment:
